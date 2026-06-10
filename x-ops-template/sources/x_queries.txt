@@ -1,0 +1,6 @@
+AI Agent OR AI工具 OR 新工具 OR tutorial OR guide filter:links min_faves:50 lang:en
+Claude Code OR Codex OR Cursor OR Windsurf OR Cline OR Roo Code filter:links min_faves:30
+MCP OR Model Context Protocol OR agent workflow filter:links min_faves:30
+open source AI tool OR GitHub AI agent OR new AI repo filter:links min_faves:50
+AI编程 OR 自动编程 OR 开源工具 OR AI教程 filter:links lang:zh
+multimodal AI OR image model OR video generation AI filter:links min_faves:50

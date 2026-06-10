@@ -1,0 +1,16 @@
+{
+  "name": "x-ai-content-radar-template",
+  "version": "1.0.0",
+  "description": "X/AI 内容雷达模板：采集 AI HOT/X/GitHub 信号并生成小红书、抖音、知识星球素材包",
+  "main": "scripts/collect-aihot.js",
+  "scripts": {
+    "aihot": "node scripts/collect-aihot.js",
+    "rank": "node scripts/rank.js",
+    "pack": "node scripts/generate-pack.js",
+    "daily-aihot-pack": "node scripts/collect-aihot.js && node scripts/rank.js && node scripts/generate-pack.js --rank=1"
+  },
+  "dependencies": {
+    "axios": "^1.7.0",
+    "dotenv": "^16.4.0"
+  }
+}
