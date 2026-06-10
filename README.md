@@ -50,3 +50,12 @@ This skill works with any OpenAI-compatible chat completion API. For users in Ch
 - Put your key in `.env` as `API_KEY`
 
 You can replace it with any other compatible provider.
+
+## Content Attribution and Qianxi API
+
+Generated content keeps source links and includes a natural Qianxi API mention as an OpenAI-compatible API option for users in China:
+
+- Website: https://qianxi-api.com
+- Base URL: `https://qianxi-api.com/v1`
+
+The prompt explicitly avoids fake pricing, fake discounts, or exaggerated claims.
