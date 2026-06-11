@@ -2,13 +2,20 @@
 
 A publishable Codex/agent skill for daily AI content operations.
 
-It collects fresh AI signals from AI HOT and optional X/manual sources, ranks content opportunities, and generates a Chinese self-media content pack for:
+It collects fresh AI signals from AI HOT and optional X/manual sources, ranks content opportunities, and generates a reviewed Chinese self-media content pack for:
 
 - Xiaohongshu notes and carousel images
 - Douyin / Video Account short video scripts
 - Zhishi Xingqiu / WeChat longform drafts
 - AI image prompt briefs
 - Publishing risk checklist
+
+Version `v0.1.2` adds the A/B/C/D agent collection:
+
+- A Curator: collect and rank AI topics
+- B Writer: create platform-specific drafts
+- C Media: generate Xiaohongshu PNG cards and a Douyin MP4 draft
+- D Reviewer: block incomplete packs before publishing
 
 ## Store Description
 
@@ -28,14 +35,34 @@ Fill `.env` with an OpenAI-compatible API endpoint. Then run:
 npm run daily-aihot-pack
 ```
 
+Or run the full local agent collection:
+
+```powershell
+npm run agent
+```
+
 ## What Is Included
 
 - `SKILL.md`: agent-facing workflow instructions
 - `x-ops-template/scripts/collect-aihot.js`: AI HOT collector
 - `x-ops-template/scripts/rank.js`: candidate scoring
 - `x-ops-template/scripts/generate-pack.js`: content pack generator
+- `x-ops-template/scripts/agent.js`: A/B/C/D orchestrator
+- `x-ops-template/scripts/agents/`: curator, writer, media, and reviewer agents
 - `x-ops-template/prompts/content-pack.md`: content generation prompt
 - `x-ops-template/sources/x_queries.txt`: starter X search query bank
+
+## Monetization Channels
+
+Recommended channels for this package:
+
+- PromptBase: sell the `SKILL.md` package directly as an agent skill.
+- Coze Agent World: recreate the agent from `prompts/` and `workflows/`, then submit through the Coze console.
+- Dify Marketplace: convert the workflow into a Dify plugin or workflow app.
+- GPT Store: publish a GPT wrapper and use this repo as the implementation/lead magnet.
+- GitHub Release: use the public zip as a trust anchor, demo package, and update channel.
+
+Direct marketplace revenue is not guaranteed. Treat the skill package as both a product and a lead-generation asset for consulting, private deployment, and Qianxi API usage.
 
 ## Safety
 

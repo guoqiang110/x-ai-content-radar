@@ -1,13 +1,24 @@
 {
-  "name": "x-ai-content-radar-template",
+  "name": "x-ops",
   "version": "1.0.0",
-  "description": "X/AI 内容雷达模板：采集 AI HOT/X/GitHub 信号并生成小红书、抖音、知识星球素材包",
-  "main": "scripts/collect-aihot.js",
+  "description": "X 运营自动化 - Claude Code 大脑 + Codex 小弟",
+  "main": "scripts/collect.js",
   "scripts": {
-    "aihot": "node scripts/collect-aihot.js",
+    "collect": "node scripts/collect.js",
+    "summarize": "node scripts/summarize.js",
+    "generate": "node scripts/generate.js",
+    "daily": "node scripts/collect.js && node scripts/summarize.js",
     "rank": "node scripts/rank.js",
     "pack": "node scripts/generate-pack.js",
-    "daily-aihot-pack": "node scripts/collect-aihot.js && node scripts/rank.js && node scripts/generate-pack.js --rank=1"
+    "daily-pack": "node scripts/collect.js && node scripts/rank.js && node scripts/summarize.js && node scripts/generate-pack.js --rank=1",
+    "aihot": "node scripts/collect-aihot.js",
+    "daily-aihot-pack": "node scripts/collect-aihot.js && node scripts/rank.js && node scripts/generate-pack.js --rank=1",
+    "agent": "node scripts/agent.js",
+    "agent:full": "node scripts/agent.js --full",
+    "agent:a": "node scripts/agents/a-curator.js",
+    "agent:b": "node scripts/agents/b-writer.js",
+    "agent:c": "node scripts/agents/c-media.js",
+    "agent:d": "node scripts/agents/d-reviewer.js"
   },
   "dependencies": {
     "axios": "^1.7.0",

@@ -1,6 +1,7 @@
 param(
   [string]$RepoName = "x-ai-content-radar",
-  [string]$Visibility = "public"
+  [string]$Visibility = "public",
+  [string]$Version = "v0.1.2"
 )
 
 $ErrorActionPreference = "Stop"
@@ -17,10 +18,16 @@ if (-not (git remote get-url origin 2>$null)) {
   git push origin master
 }
 
-git push origin v0.1.0
+if (Test-Path $zip) { Remove-Item -LiteralPath $zip -Force }
+Compress-Archive -Path (Join-Path $root '*') -DestinationPath $zip -Force
 
-gh release create v0.1.0 $zip `
-  --title "x-ai-content-radar v0.1.0" `
-  --notes-file RELEASE_NOTES.md
+if (-not (git tag --list $Version)) {
+  git tag $Version
+}
+git push origin $Version
 
-Write-Host "GitHub Release created for v0.1.0"
+gh release create $Version $zip `
+  --title "x-ai-content-radar $Version" `
+  --notes-file "RELEASE_NOTES_$Version.md"
+
+Write-Host "GitHub Release created for $Version"

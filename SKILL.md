@@ -16,6 +16,13 @@ Use this skill to run a daily AI content-operation workflow: collect fresh AI si
 
 ## Daily Workflow
 
+Full A/B/C/D agent run:
+
+```powershell
+cd D:\x-ops
+npm run agent
+```
+
 Default daily run:
 
 ```powershell
@@ -49,7 +56,23 @@ npm run pack -- --rank=1
 - Raw data: `data/raw/YYYY-MM-DD.json`
 - Ranked candidates: `data/ranked/YYYY-MM-DD.md`
 - Content pack: `data/content-packs/YYYY-MM-DD-*/content-pack.md`
+- Xiaohongshu PNG cards: `data/content-packs/YYYY-MM-DD-*/materials/01-xiaohongshu-images/`
+- Douyin draft video: `data/content-packs/YYYY-MM-DD-*/materials/02-douyin-video/douyin-auto-v1.mp4`
+- Review report: `data/content-packs/YYYY-MM-DD-*/review-report.md`
 - Split assets: Xiaohongshu, Douyin, longform, image prompts, and review checklist.
+
+## Agent Collection
+
+- A Curator: collect AI HOT/X/manual signals and rank topics.
+- B Writer: generate Xiaohongshu, Douyin, Zhishi Xingqiu, and WeChat drafts.
+- C Media: render Xiaohongshu PNG cards and a Douyin/Video Account MP4 draft.
+- D Reviewer: verify source links, Qianxi API mention, required drafts, PNG cards, and MP4 output.
+
+If D Reviewer returns `NEEDS FIX`, do not publish. Fix the failed check, rerun the relevant agent, then rerun:
+
+```powershell
+npm run agent:d
+```
 
 ## Quality Bar
 
@@ -58,3 +81,11 @@ npm run pack -- --rank=1
 - Do not auto-post. Generate reviewable drafts only.
 - Avoid exaggerated marketing claims.
 
+## Qianxi API Lead-In Rule
+
+When relevant, include Qianxi API as a practical OpenAI-compatible API option:
+
+- Website: https://qianxi-api.com
+- Base URL: `https://qianxi-api.com/v1`
+
+Keep the mention natural. Do not invent pricing, discounts, guarantees, benchmark claims, or hidden links.
