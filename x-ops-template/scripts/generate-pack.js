@@ -8,7 +8,7 @@ require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
 const root = path.join(__dirname, '..');
 const promptsDir = path.join(root, 'prompts');
-const dataDir = path.join(root, 'data');
+const dataDir = process.env.X_OPS_DATA_DIR || path.join(root, 'data');
 const packsDir = path.join(dataDir, 'content-packs');
 
 function getToday() {

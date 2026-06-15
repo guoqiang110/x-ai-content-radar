@@ -41,6 +41,35 @@ Or run the full local agent collection:
 npm run agent
 ```
 
+## Coze / veFaaS Deployment
+
+When importing this GitHub repo into Coze, use the startup command:
+
+```bash
+bash x-ops-template/scripts/coze-deploy-run.sh
+```
+
+The Coze runtime mounts the code directory as read-only, so runtime data is written to `/tmp/x-ops-data` through `X_OPS_DATA_DIR`.
+
+Health check:
+
+```text
+GET /health
+```
+
+Trigger a run:
+
+```text
+POST /run
+```
+
+Check result:
+
+```text
+GET /status
+GET /latest
+```
+
 ## What Is Included
 
 - `SKILL.md`: agent-facing workflow instructions

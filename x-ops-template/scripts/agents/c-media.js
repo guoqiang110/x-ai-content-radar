@@ -24,8 +24,8 @@ function parseCarousel(text) {
   if (sections.length) {
     return sections.map((m) => {
       const body = m[2];
-      const title = (body.match(/-\s*(?:\*\*)?大标题：(?:\*\*)?\s*(.+)/) || [])[1] || `AI Hot Page ${m[1]}`;
-      const bulletBlock = (body.match(/-\s*(?:\*\*)?要点：(?:\*\*)?\s*([\s\S]*?)(?=\n-\s*(?:\*\*)?画面建议：|$)/) || [])[1] || '';
+      const title = (body.match(/-\s*(?:\*\*)?大标题(?:\*\*)?\s*[:：]\s*(.+)/) || [])[1] || `AI Hot Page ${m[1]}`;
+      const bulletBlock = (body.match(/-\s*(?:\*\*)?要点(?:\*\*)?\s*[:：]\s*([\s\S]*?)(?=\n-\s*(?:\*\*)?画面建议(?:\*\*)?\s*[:：]|$)/) || [])[1] || '';
       const listBullets = [...bulletBlock.matchAll(/-\s+(.+)/g)].map((x) => x[1]);
       const inlineBullets = bulletBlock.split(/\s*\/\s*|[；;]\s*/).filter(Boolean);
       return {
@@ -77,6 +77,11 @@ function writeCards(packDir) {
   const cards = parseCarousel(text).slice(0, 9);
   const out = path.join(packDir, 'materials', '01-xiaohongshu-images');
   fs.mkdirSync(out, { recursive: true });
+  fs.readdirSync(out)
+    .filter((file) => /^xhs-.*\.(png|svg)$/i.test(file) || file.startsWith('tmp-'))
+    .forEach((file) => {
+      try { fs.unlinkSync(path.join(out, file)); } catch (_) {}
+    });
   const files = [];
   const cardSpecPath = path.join(out, 'cards.json');
   fs.writeFileSync(cardSpecPath, JSON.stringify(cards.map((card, index) => ({ ...card, page: index + 1, total: cards.length })), null, 2), 'utf8');
@@ -84,65 +89,92 @@ function writeCards(packDir) {
     const svgPath = path.join(out, `xhs-${String(index + 1).padStart(2, '0')}.svg`);
     fs.writeFileSync(svgPath, svgCard({ ...card, page: index + 1 }, cards.length), 'utf8');
     files.push(svgPath);
-    const pngPath = svgPath.replace(/\.svg$/, '.png');
-    const converted = run('ffmpeg', ['-y', '-i', svgPath, pngPath], { timeout: 60000 });
-    if (converted.status === 'ok') files.push(pngPath);
   });
-  const pngCount = fs.readdirSync(out).filter((file) => file.toLowerCase().endsWith('.png')).length;
-  if (pngCount < 7) {
-    const renderer = path.join(__dirname, 'render-png-cards.ps1');
-    const fallback = run('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', renderer, '-CardsJson', cardSpecPath, '-OutputDir', out], { timeout: 120000 });
-    if (fallback.status === 'ok') {
-      fs.readdirSync(out)
-        .filter((file) => file.toLowerCase().endsWith('.png'))
-        .forEach((file) => {
-          const pngPath = path.join(out, file);
-          if (!files.includes(pngPath)) files.push(pngPath);
-        });
-    }
+  const renderer = path.join(__dirname, 'render-png-cards.ps1');
+  const renderStep = run('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', renderer, '-CardsJson', cardSpecPath, '-OutputDir', out], { timeout: 120000 });
+  if (renderStep.status === 'ok') {
+    fs.readdirSync(out)
+      .filter((file) => /^xhs-\d{2}\.png$/i.test(file))
+      .sort()
+      .forEach((file) => {
+        const pngPath = path.join(out, file);
+        if (!files.includes(pngPath)) files.push(pngPath);
+      });
   }
   return files;
 }
 
-function makeAss(packDir) {
+function makeSlideList(packDir) {
   const outDir = path.join(packDir, 'materials', '02-douyin-video');
   fs.mkdirSync(outDir, { recursive: true });
-  const source = fs.existsSync(path.join(packDir, 'source.json')) ? JSON.parse(fs.readFileSync(path.join(packDir, 'source.json'), 'utf8')) : {};
-  const title = (source.title || 'AI 热点内容生产线').replace(/[{}]/g, '');
-  const scenes = [
-    ['0:00:00.00', '0:00:05.00', '今天这个 AI 热点，值得做成内容'],
-    ['0:00:05.00', '0:00:11.00', title.slice(0, 28)],
-    ['0:00:11.00', '0:00:18.00', '流程：热点捕捉 → 智能选题 → 素材生成'],
-    ['0:00:18.00', '0:00:25.00', '小红书、抖音、知识星球都能拆出来'],
-    ['0:00:25.00', '0:00:32.00', '需要模型接口？国内可看乾羲 API'],
-    ['0:00:32.00', '0:00:40.00', 'https://qianxi-api.com'],
-  ];
-  const ass = `[Script Info]
-ScriptType: v4.00+
-PlayResX: 1080
-PlayResY: 1920
-
-[V4+ Styles]
-Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Main,Microsoft YaHei,72,&H00FFFFFF,&H000000FF,&H0010273A,&H80000000,1,0,0,0,100,100,0,0,1,4,2,5,70,70,120,1
-Style: Small,Microsoft YaHei,42,&H00DDF7FF,&H000000FF,&H0010273A,&H80000000,0,0,0,0,100,100,0,0,1,3,1,2,70,70,120,1
-
-[Events]
-Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-${scenes.map((s) => `Dialogue: 0,${s[0]},${s[1]},Main,,0,0,0,,${s[2]}`).join('\n')}
-Dialogue: 0,0:00:35.00,0:00:40.00,Small,,0,0,0,,OpenAI-compatible API · 人工审核后发布
-`;
-  const assPath = path.join(outDir, 'douyin-subtitles.ass');
-  fs.writeFileSync(assPath, ass, 'utf8');
-  return assPath;
+  const imageDir = path.join(packDir, 'materials', '01-xiaohongshu-images');
+  const images = fs.readdirSync(imageDir)
+    .filter((file) => /^xhs-\d{2}\.png$/i.test(file))
+    .sort()
+    .map((file) => path.join(imageDir, file));
+  const listPath = path.join(outDir, 'douyin-slides.txt');
+  const lines = [];
+  images.forEach((file, index) => {
+    lines.push(`file '${file.replace(/\\/g, '/').replace(/'/g, "'\\''")}'`);
+    lines.push(index === 0 ? 'duration 3.6' : 'duration 3.2');
+  });
+  if (images.length) lines.push(`file '${images[images.length - 1].replace(/\\/g, '/').replace(/'/g, "'\\''")}'`);
+  fs.writeFileSync(listPath, `${lines.join('\n')}\n`, 'utf8');
+  return { listPath, images };
 }
 
 function renderVideo(packDir) {
   const outDir = path.join(packDir, 'materials', '02-douyin-video');
-  const assPath = makeAss(packDir);
+  const { listPath, images } = makeSlideList(packDir);
   const out = path.join(outDir, 'douyin-auto-v1.mp4');
-  const vf = `subtitles='${assPath.replace(/\\/g, '/').replace(/:/, '\\:')}'`;
-  const step = run('ffmpeg', ['-y', '-f', 'lavfi', '-i', 'color=c=0b1220:s=1080x1920:d=40:r=30', '-vf', vf, '-c:v', 'libx264', '-pix_fmt', 'yuv420p', out], { timeout: 120000 });
+  if (images.length < 7) {
+    return { out, step: { command: 'render card slideshow', status: 'failed', exitCode: 1, stdout: '', stderr: `Expected at least 7 PNG cards, got ${images.length}` } };
+  }
+  const vf = 'scale=1080:-2,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=f8fafc,fps=30,fade=t=in:st=0:d=0.25,fade=t=out:st=30.8:d=0.5,format=yuv420p';
+  const step = run('ffmpeg', ['-y', '-f', 'concat', '-safe', '0', '-i', listPath, '-vf', vf, '-c:v', 'libx264', '-r', '30', '-pix_fmt', 'yuv420p', out], { timeout: 180000 });
+  return { out, step };
+}
+
+function renderEnhancedVideo(packDir) {
+  const outDir = path.join(packDir, 'materials', '02-douyin-video');
+  const { listPath, images } = makeSlideList(packDir);
+  const out = path.join(outDir, 'douyin-enhanced-v1.mp4');
+  if (images.length < 7) {
+    return { out, step: { command: 'render enhanced slideshow', status: 'failed', exitCode: 1, stdout: '', stderr: `Expected at least 7 PNG cards, got ${images.length}` } };
+  }
+  const duration = 32.4;
+  const vf = [
+    'scale=1000:-2',
+    'pad=1080:1920:(ow-iw)/2:210:color=111827',
+    'drawbox=x=0:y=0:w=iw:h=170:color=0f172a@0.96:t=fill',
+    'drawbox=x=54:y=48:w=280:h=44:color=38bdf8@1:t=fill',
+    'drawbox=x=54:y=108:w=520:h=22:color=64748b@1:t=fill',
+    'drawbox=x=54:y=142:w=972:h=10:color=334155@1:t=fill',
+    `drawbox=x=54:y=142:w='min(972,972*t/${duration})':h=10:color=38bdf8@1:t=fill`,
+    'drawbox=x=0:y=1770:w=iw:h=150:color=0f172a@0.92:t=fill',
+    'drawbox=x=54:y=1815:w=650:h=34:color=ffffff@1:t=fill',
+    'drawbox=x=54:y=1866:w=430:h=20:color=38bdf8@1:t=fill',
+    'fade=t=out:st=30.8:d=0.5',
+    'fps=30',
+    'format=yuv420p',
+  ].join(',');
+  const step = run('ffmpeg', [
+    '-y',
+    '-f', 'concat',
+    '-safe', '0',
+    '-i', listPath,
+    '-f', 'lavfi',
+    '-i', 'sine=frequency=220:sample_rate=44100',
+    '-vf', vf,
+    '-af', 'volume=0.08',
+    '-shortest',
+    '-c:v', 'libx264',
+    '-c:a', 'aac',
+    '-b:a', '96k',
+    '-r', '30',
+    '-pix_fmt', 'yuv420p',
+    out,
+  ], { timeout: 180000 });
   return { out, step };
 }
 
@@ -152,13 +184,16 @@ function main() {
   if (!packDir) throw new Error('No content pack found. Run B writer first.');
   const cards = writeCards(packDir);
   const video = renderVideo(packDir);
-  const pngCards = cards.filter((file) => file.toLowerCase().endsWith('.png'));
+  const enhanced = video.step.status === 'ok' ? renderEnhancedVideo(packDir) : null;
+  const pngCards = cards.filter((file) => /\\xhs-\d{2}\.png$/i.test(file));
   const status = video.step.status === 'ok' && pngCards.length >= 7 ? 'ok' : 'failed';
-  const manifest = { agent: 'C-media', date, status, contentPackDir: packDir, cards, pngCards, video: video.out, steps: [video.step] };
+  const steps = enhanced ? [video.step, enhanced.step] : [video.step];
+  const manifest = { agent: 'C-media', date, status, contentPackDir: packDir, cards, pngCards, video: video.out, enhancedVideo: enhanced?.out || '', steps };
   writeJson(path.join(dataDir, 'agent-runs', `${date}-c-media.json`), manifest);
   console.log(`C Media: ${manifest.status}`);
   console.log(`Cards: ${pngCards.length}`);
   console.log(`Video: ${video.out}`);
+  if (enhanced) console.log(`Enhanced video: ${enhanced.out}`);
   if (manifest.status !== 'ok') process.exitCode = 1;
 }
 main();

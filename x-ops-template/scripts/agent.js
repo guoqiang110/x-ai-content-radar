@@ -6,7 +6,7 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 
 const root = path.join(__dirname, '..');
-const dataDir = path.join(root, 'data');
+const dataDir = process.env.X_OPS_DATA_DIR || path.join(root, 'data');
 const runsDir = path.join(dataDir, 'agent-runs');
 
 function today() { return new Date().toISOString().slice(0, 10); }

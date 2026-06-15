@@ -3,7 +3,7 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 
 const root = path.join(__dirname, '..', '..');
-const dataDir = path.join(root, 'data');
+const dataDir = process.env.X_OPS_DATA_DIR || path.join(root, 'data');
 
 function today() { return new Date().toISOString().slice(0, 10); }
 function readJson(filePath, fallback) { if (!fs.existsSync(filePath)) return fallback; return JSON.parse(fs.readFileSync(filePath, 'utf8')); }

@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.join(__dirname, '..');
-const dataDir = path.join(root, 'data');
+const dataDir = process.env.X_OPS_DATA_DIR || path.join(root, 'data');
 const rawDir = path.join(dataDir, 'raw');
 const rankedDir = path.join(dataDir, 'ranked');
 

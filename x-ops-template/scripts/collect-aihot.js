@@ -6,7 +6,8 @@ const path = require('path');
 const axios = require('axios');
 
 const root = path.join(__dirname, '..');
-const rawDir = path.join(root, 'data', 'raw');
+const dataDir = process.env.X_OPS_DATA_DIR || path.join(root, 'data');
+const rawDir = path.join(dataDir, 'raw');
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 const BASE_URL = 'https://aihot.virxact.com';
